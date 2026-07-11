@@ -1,0 +1,23 @@
+{
+  "selected_model": "mobilenet_finetuned",
+  "models": {
+    "baseline": {
+      "type": "keras",
+      "path": "models/baseline_best.keras",
+      "class_names": ["Zea_mays_Chulpi_Cancha", "Zea_mays_Indurata", "Zea_mays_Rugosa"],
+      "image_size": [224, 224]
+    },
+    "mobilenet_finetuned": {
+      "type": "keras",
+      "path": "models/mobilenetv2_finetuned_best.keras",
+      "class_names": ["Zea_mays_Chulpi_Cancha", "Zea_mays_Indurata", "Zea_mays_Rugosa"],
+      "image_size": [224, 224]
+    },
+    "light": {
+      "type": "tflite",
+      "path": "models/corn_classifier_dynamic_quant.tflite",
+      "class_names": ["Zea_mays_Chulpi_Cancha", "Zea_mays_Indurata", "Zea_mays_Rugosa"],
+      "image_size": [224, 224]
+    }
+  }
+}

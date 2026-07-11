@@ -1,0 +1,6 @@
+fastapi
+uvicorn[standard]>=0.34,<1.0
+tensorflow
+pillow>=10,<13
+numpy>=1.26,<3
+pydantic>=2,<3

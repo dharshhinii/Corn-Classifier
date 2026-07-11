@@ -1,0 +1,15 @@
+FROM python:3.11-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    API_URL=http://api:8000 \
+    SHARED_IMAGE_DIR=/data/images
+
+WORKDIR /ui
+COPY requirements-ui.txt /ui/requirements-ui.txt
+RUN python -m pip install --upgrade pip \
+    && python -m pip install -r /ui/requirements-ui.txt
+COPY streamlit_app.py /ui/streamlit_app.py
+
+EXPOSE 8502
+CMD ["streamlit", "run", "/ui/streamlit_app.py", "--server.address=0.0.0.0", "--server.port=8502"]
