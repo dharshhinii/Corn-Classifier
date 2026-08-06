@@ -2,18 +2,23 @@ import os
 import subprocess
 import sys
 
-os.environ.setdefault("API_URL", "http://127.0.0.1:8000")
-os.environ.setdefault("SHARED_IMAGE_DIR", "./test_images")
+# Navigate to the frontend directory relative to this script
+script_dir = os.path.dirname(os.path.abspath(__file__))
+frontend_dir = os.path.join(script_dir, "frontend")
 
-subprocess.run(
-    [
-        sys.executable,
-        "-m",
-        "streamlit",
-        "run",
-        "streamlit_app.py",
-        "--server.address=0.0.0.0",
-        "--server.port=8502",
-    ],
-    check=True,
-)
+if not os.path.exists(frontend_dir):
+    print(f"Error: Frontend directory {frontend_dir} does not exist.")
+    sys.exit(1)
+
+os.chdir(frontend_dir)
+
+print("Starting React (Vite) development server on http://localhost:8502...")
+try:
+    subprocess.run(
+        "npm run dev -- --port 8502 --host 0.0.0.0",
+        shell=True,
+        check=True,
+    )
+except KeyboardInterrupt:
+    print("\nStopping React development server.")
+
