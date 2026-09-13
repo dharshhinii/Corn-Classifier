@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  corn-classifier-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: corn_classifier_service
+    ports:
+      - "8000:8000"
+    environment:
+      - MODEL_CONFIG=config.json
+      - MODEL_NAME=mobilenet_finetuned
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
