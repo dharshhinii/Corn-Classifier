@@ -5,6 +5,10 @@ class PredictRequest(BaseModel):
     image_path: str = Field(..., min_length=1)
 
 
+class SwitchModelRequest(BaseModel):
+    model_name: str = Field(..., min_length=1)
+
+
 class TimingResponse(BaseModel):
     preprocessing: float
     inference: float
@@ -28,6 +32,17 @@ class HealthResponse(BaseModel):
     model_type: str | None = None
 
 
+class ModelItemInfo(BaseModel):
+    name: str
+    type: str
+    path: str
+    file_exists: bool
+    file_size_mb: float | None
+    class_names: list[str]
+    image_size: list[int]
+    is_active: bool
+
+
 class ModelInfoResponse(BaseModel):
     name: str
     type: str
@@ -37,3 +52,10 @@ class ModelInfoResponse(BaseModel):
     class_names: list[str]
     number_of_classes: int
     image_size: list[int]
+    available_models: dict[str, ModelItemInfo] | None = None
+
+
+class SampleImageInfo(BaseModel):
+    filename: str
+    url: str
+    server_path: str

@@ -1,0 +1,12 @@
+{
+  "class_names": [
+    "Zea_mays_Chulpi_Cancha",
+    "Zea_mays_Indurata",
+    "Zea_mays_Rugosa"
+  ],
+  "image_size": [
+    224,
+    224
+  ],
+  "selected_model": "MobileNetV2"
+}

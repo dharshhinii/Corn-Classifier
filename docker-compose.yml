@@ -1,34 +1,19 @@
+version: '3.8'
+
 services:
-  api:
+  corn-classifier-app:
     build:
       context: .
       dockerfile: Dockerfile
-    image: image-classifier-api:latest
-    container_name: image-classifier-api
+    container_name: corn_classifier_service
     ports:
       - "8000:8000"
-    volumes:
-      - ./models:/app/models:ro
-      - shared-images:/data/images
-    command: ["baseline"]
-    restart: unless-stopped
-
-  ui:
-    build:
-      context: .
-      dockerfile: Dockerfile.ui
-    image: image-classifier-ui:latest
-    container_name: image-classifier-ui
-    ports:
-      - "8501:8501"
     environment:
-      API_URL: http://api:8000
-      SHARED_IMAGE_DIR: /data/images
-    volumes:
-      - shared-images:/data/images
-    depends_on:
-      - api
+      - MODEL_CONFIG=config.json
+      - MODEL_NAME=mobilenet_finetuned
     restart: unless-stopped
-
-volumes:
-  shared-images:
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3

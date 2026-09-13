@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import io
 import threading
 import time
 from pathlib import Path
@@ -45,9 +46,24 @@ class ImageClassifier:
                 "model type must be 'keras' or 'tflite'"
             )
 
-    def _prepare(self, image_path: str) -> np.ndarray:
-        path = Path(image_path).expanduser().resolve()
+    def _prepare_pil(self, pil_image: Image.Image) -> np.ndarray:
+        image = pil_image.convert("RGB")
+        image = image.resize(
+            self.config.image_size,
+            Image.Resampling.BILINEAR,
+        )
+        array = np.asarray(image, dtype=np.float32)
+        return np.expand_dims(array, axis=0)
 
+    def _prepare(self, image_source: str | bytes) -> np.ndarray:
+        if isinstance(image_source, bytes):
+            try:
+                with Image.open(io.BytesIO(image_source)) as image:
+                    return self._prepare_pil(image)
+            except (UnidentifiedImageError, OSError) as exc:
+                raise ValueError("Invalid image bytes uploaded") from exc
+
+        path = Path(image_source).expanduser().resolve()
         if not path.exists():
             raise FileNotFoundError(f"Image not found: {path}")
         if not path.is_file():
@@ -55,16 +71,9 @@ class ImageClassifier:
 
         try:
             with Image.open(path) as image:
-                image = image.convert("RGB")
-                image = image.resize(
-                    self.config.image_size,
-                    Image.Resampling.BILINEAR,
-                )
-                array = np.asarray(image, dtype=np.float32)
+                return self._prepare_pil(image)
         except (UnidentifiedImageError, OSError) as exc:
-            raise ValueError(f"Invalid image: {path}") from exc
-
-        return np.expand_dims(array, axis=0)
+            raise ValueError(f"Invalid image file: {path}") from exc
 
     def _keras_predict(self, batch: np.ndarray) -> np.ndarray:
         return np.asarray(
@@ -120,11 +129,11 @@ class ImageClassifier:
         exp_values = np.exp(values)
         return (exp_values / exp_values.sum()).astype(np.float32)
 
-    def predict(self, image_path: str) -> dict:
+    def predict(self, image_source: str | bytes, display_name: str | None = None) -> dict:
         total_start = time.perf_counter()
 
         preprocess_start = time.perf_counter()
-        batch = self._prepare(image_path)
+        batch = self._prepare(image_source)
         preprocessing_ms = (
             time.perf_counter() - preprocess_start
         ) * 1000
@@ -148,12 +157,15 @@ class ImageClassifier:
         predicted_index = int(np.argmax(probabilities))
         total_ms = (time.perf_counter() - total_start) * 1000
 
+        if isinstance(image_source, bytes):
+            image_label = display_name or "[Uploaded Image Bytes]"
+        else:
+            image_label = str(Path(image_source).expanduser().resolve())
+
         return {
             "model": self.config.name,
             "model_type": self.config.model_type,
-            "image_path": str(
-                Path(image_path).expanduser().resolve()
-            ),
+            "image_path": image_label,
             "predicted_class": self.config.class_names[predicted_index],
             "confidence": round(
                 float(probabilities[predicted_index]), 6
